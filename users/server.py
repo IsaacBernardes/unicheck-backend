@@ -1,17 +1,20 @@
-import os
 import sanic
 from sanic import Sanic
 from sanic_openapi import openapi, openapi3_blueprint
 
 from resources.resources_users_listusers import listusers_resolver
+from resources.resources_users_signin import signin_resolver
+from resources.resources_users_signup import signup_resolver
+from resources.resources_users_validatetoken import validatetoken_resolver
 from interfaces.ListUsersRequest import ListUsersRequestSuccessResponse, ListUsersRequestErrorResponse
-from resources.resources_users_insertuser import insertuser_resolver
 from interfaces.InsertUserRequest import InsertUserRequestBody, InsertUserRequestSuccessResponse, InsertUserRequestErrorResponse
+from interfaces.SigninRequest import SigninRequestBody, SigninRequestSuccessResponse, SigninRequestErrorResponse
+from utils.environments import Environment
 
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
-__last_modify__ = "05/09/2022"
+__last_modify__ = "22/09/2022"
 __version__ = open("version").read()
 
 
@@ -54,16 +57,64 @@ async def list_users(request: sanic.Request):
 @openapi.response(200, {"application/json": InsertUserRequestSuccessResponse}, "Operation completed successfully")
 @openapi.response(400, {"application/json": InsertUserRequestErrorResponse}, "There was a problem with the data provided")
 @openapi.response(401, {"application/json": InsertUserRequestErrorResponse}, "User is not authenticated or does not have access to this functionality")
+@openapi.response(412, {"application/json": InsertUserRequestErrorResponse}, "User email already exists")
 @openapi.response(500, {"application/json": InsertUserRequestErrorResponse}, "Internal server error")
 async def insert_user(request: sanic.Request):
 
     try:
         req = {
             "headers": request.headers,
-            "body": request.body,
+            "body": request.json,
             "params": {}
         }
-        return insertuser_resolver(req)
+        return signup_resolver(req)
+    except Exception as ex:
+        print(ex)
+        return sanic.response.json(body={
+            "message": "Erro ao receber a requisição",
+            "version": __version__,
+            "data": []
+        }, status=500)
+
+
+@app.post("/api/users/signin")
+@openapi.summary("Sing in")
+@openapi.description("Route destined authenticate yourself")
+@openapi.body({"application/json": SigninRequestBody}, required=True)
+@openapi.response(200, {"application/json": SigninRequestSuccessResponse}, "Operation completed successfully")
+@openapi.response(400, {"application/json": SigninRequestErrorResponse}, "There was a problem with the data provided")
+@openapi.response(401, {"application/json": SigninRequestErrorResponse}, "User is not authenticated or does not have access to this functionality")
+@openapi.response(500, {"application/json": SigninRequestErrorResponse}, "Internal server error")
+async def insert_user(request: sanic.Request):
+
+    try:
+        req = {
+            "headers": request.headers,
+            "body": request.json,
+            "params": {}
+        }
+        return signin_resolver(req)
+    except Exception as ex:
+        print(ex)
+        return sanic.response.json(body={
+            "message": "Erro ao receber a requisição",
+            "version": __version__,
+            "data": []
+        }, status=500)
+
+
+@app.post("/api/users/validatetoken")
+@openapi.summary("Validate token")
+@openapi.description("Verify if user token is valid")
+async def validate_token(request: sanic.Request):
+
+    try:
+        req = {
+            "headers": request.headers,
+            "body": request.json,
+            "params": {}
+        }
+        return validatetoken_resolver(req)
     except Exception as ex:
         print(ex)
         return sanic.response.json(body={
@@ -74,7 +125,9 @@ async def insert_user(request: sanic.Request):
 
 
 if __name__ == "__main__":
-    host = os.getenv("SERVER_HOST", "0.0.0.0")
-    port = int(os.getenv("SERVER_PORT", "8090"))
-    dev = not (os.getenv("PROD", "true") in ["true", "True", "TRUE", "1"])
+    environ = Environment()
+
+    host = environ.get("SERVER_HOST")
+    port = environ.get("SERVER_PORT")
+    dev = not environ.get("PROD")
     app.run(host=host, port=port, dev=dev)

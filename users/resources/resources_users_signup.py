@@ -1,7 +1,7 @@
 import psycopg2
 import sanic.response
 
-from database.user_connection import UserConnection
+from utils.keycloack import KeycloackClient
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
@@ -15,20 +15,43 @@ api_results = {
     "databaseError": {"status": 400, "message": "Erro no banco de dados"},
     "invalidToken": {"status": 401, "message": "O token do usuário não foi reconhecido"},
     "notAuthorized": {"status": 401, "message": "O usuário não possui acesso a esta funcionalidade"},
+    "alreadyExists": {"status": 412, "message": "O usuário já foi cadastrado"},
     "defaultError": {"status": 500, "message": "Erro interno da API"}
 }
 
 
-def insertuser_resolver(request, context=None):
+def signup_resolver(request, context=None):
 
-    conn = UserConnection()
-    cnx = conn.init_connection()
-    cursor = cnx.cursor()
-    situation = "invalidToken"
+    keycloack_client = KeycloackClient()
+    keycloack_client.connect()
+    situation = "defaultError"
     data = []
 
     try:
-        situation = "success"
+
+        body_request = {
+            "firstName": request["body"]["firstName"],
+            "lastName": request["body"]["lastName"],
+            "email": request["body"]["email"],
+            "emailVerified": False,
+            "enabled": True,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": request["body"]["password"],
+                    "temporary": False
+                }
+            ]
+        }
+
+        insert_path = "/admin/realms/$REALM/users"
+        result = keycloack_client.post_json(insert_path, body_request)
+
+        if result[0] == 201:
+            situation = "success"
+        else:
+            situation = "alreadyExists"
+
     except KeyError as ex:
         print("Key error: " + str(ex))
         situation = "keyError"
@@ -43,7 +66,7 @@ def insertuser_resolver(request, context=None):
         situation = "defaultError"
 
     finally:
-        cnx.close()
+        keycloack_client.disconnect()
         return sanic.response.json(body={
             "message": api_results[situation]["message"],
             "data": data,
