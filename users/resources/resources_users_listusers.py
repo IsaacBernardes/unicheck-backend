@@ -2,6 +2,7 @@ import psycopg2
 import sanic.response
 
 from utils.keycloack import KeycloackClient
+from resources.resources_users_validatetoken import validatetoken_resolver
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
@@ -14,13 +15,12 @@ api_results = {
     "dataError": {"status": 400, "message": "Erro ao realizar a operação no banco de dados"},
     "databaseError": {"status": 400, "message": "Erro no banco de dados"},
     "invalidToken": {"status": 401, "message": "O token do usuário não foi reconhecido"},
-    "invalidUser": {"status": 401, "message": "O usuário informado não foi cadastrado"},
     "notAuthorized": {"status": 401, "message": "O usuário não possui acesso a esta funcionalidade"},
     "defaultError": {"status": 500, "message": "Erro interno da API"}
 }
 
 
-def finduser_resolver(request, context=None):
+def listusers_resolver(request, context=None):
 
     keycloack_client = KeycloackClient()
     keycloack_client.connect()
@@ -29,15 +29,28 @@ def finduser_resolver(request, context=None):
 
     try:
 
-        user_email = request["params"]["email"]
-        search_path = "/admin/realms/$REALM/users?email" + user_email
+        # VERIFY AUTHORIZATION
+        status_code, user_info = validatetoken_resolver(request, context="APP")
+
+        if status_code != 200:
+            situation = "invalidToken"
+            return
+
+        search_path = "/admin/realms/$REALM/users?max=100"
+
+        page = request["params"].get("page")
+        if page is not None:
+            search_path += "&first=" + (page - 1) * 100
+
+        search = request["params"].get("search")
+        if search is not None:
+            search_path += "&search=" + search
+
         result = keycloack_client.get(search_path)
 
         if result[0] == 200:
             situation = "success"
             data = result[1]
-        else:
-            situation = "invalidUser"
 
     except KeyError as ex:
         print("Key error: " + str(ex))

@@ -7,10 +7,13 @@ __version__ = open("version").read()
 
 
 class ListUsersRequestResponseData:
-    id = openapi.Integer(default=1)
-    name = openapi.String(default="Isaac Bernardes")
-    user = openapi.String(default="isaac.bernardes")
-    createdAt = openapi.DateTime()
+    id = openapi.String(default="aaaa-bbbb-cccc-dddd")
+    createdTimestamp = openapi.Integer(default=1664082051627)
+    enabled = openapi.Boolean(default=True)
+    firstName = openapi.String(default="Isaac")
+    lastName = openapi.String(default="Bernardes")
+    email = openapi.String(default="isaac.bernardes@ufrpe.br")
+    emailVerified = openapi.Boolean(default=True)
 
 
 class ListUsersRequestSuccessResponse:
