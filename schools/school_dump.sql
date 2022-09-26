@@ -20,8 +20,5 @@ CREATE TABLE public.school (
 	name text NOT NULL,
 	CONSTRAINT school_pk PRIMARY KEY (id)
 );
--- ddl-end --
-ALTER TABLE public.school OWNER TO postgres;
--- ddl-end --
 
 
