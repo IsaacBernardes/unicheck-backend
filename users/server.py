@@ -27,7 +27,7 @@ app = Sanic("UserApp")
 app.blueprint(openapi3_blueprint)
 
 
-@app.get("/api/users")
+@app.get("/users")
 @openapi.summary("List users")
 @openapi.description("Route destined to list users")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -53,7 +53,7 @@ async def find_user(request: sanic.Request):
         }, status=500)
 
 
-@app.put("/api/users")
+@app.put("/users")
 @openapi.summary("Insert User")
 @openapi.description("Route destined to add a new user to the system")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -81,7 +81,7 @@ async def insert_user(request: sanic.Request):
         }, status=500)
 
 
-@app.post("/api/users")
+@app.post("/users")
 @openapi.summary("Update User")
 @openapi.description("Route destined to update a user in the system")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -109,7 +109,7 @@ async def update_user(request: sanic.Request):
         }, status=500)
 
 
-@app.delete("/api/users")
+@app.delete("/users")
 @openapi.summary("Delete user")
 @openapi.description("Delete user")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -134,7 +134,7 @@ async def delete_user(request: sanic.Request):
         }, status=500)
 
 
-@app.post("/api/users/signin")
+@app.post("/users/signin")
 @openapi.summary("Sing in")
 @openapi.description("Route destined authenticate yourself")
 @openapi.body({"application/json": SigninRequestBody}, required=True)
@@ -160,7 +160,7 @@ async def insert_user(request: sanic.Request):
         }, status=500)
 
 
-@app.post("/api/users/forgot")
+@app.post("/users/forgot")
 @openapi.summary("Forgot")
 @openapi.description("Route destined to send an e-mail to recover account")
 @openapi.body({"application/json": ForgotRequestBody}, required=True)
@@ -186,7 +186,7 @@ async def forgot_user(request: sanic.Request):
         }, status=500)
 
 
-@app.post("/api/users/validatetoken")
+@app.post("/users/validatetoken")
 @openapi.summary("Validate token")
 @openapi.description("Verify if user token is valid")
 @openapi.parameter("Authorization", str, location="header", required=True)

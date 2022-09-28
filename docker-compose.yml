@@ -83,7 +83,7 @@ services:
   users_service:
     build: ./users
     environment:
-      KEYCLOAK_URL: "keycloak"
+      KEYCLOAK_URL: "http://keycloak:8080"
       KEYCLOAK_CLIENT_ID: "backend"
       KEYCLOAK_CLIENT_SECRET: "***"
       PROD: "True"
@@ -133,3 +133,15 @@ services:
     command: start-dev
     depends_on:
       - users_database
+
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "10000:10000"
+    command: npm start
+    depends_on:
+      - users_service
+      - unities_service
+      - schools_service
+      - school_classes_service
+      - subjects_service

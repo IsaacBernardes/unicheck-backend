@@ -7,17 +7,19 @@ app.use(logger('dev'));
 
 function selectProxyHost(req) {
     if (req.path.startsWith('/schools'))
-        return 'schools_service/schools';
+        return 'host.docker.internal:9003' + req.path;
     else if (req.path.startsWith('/schoolClass'))
-        return 'schoolClass_service/schoolClass';
+        return 'host.docker.internal:9004' + req.path;
     else if (req.path.startsWith('/subjects'))
-        return 'subjects_service/subjects';
+        return 'host.docker.internal:9005' + req.path;
     else if (req.path.startsWith('/unities'))
-        return 'unities_service/unities';
+        return 'host.docker.internal:9001' + req.path;
+    else if (req.path.startsWith('/invites'))
+        return 'host.docker.internal:9001' + req.path;
     else if (req.path.startsWith('/users'))
-        return 'users_service/users';
+        return 'host.docker.internal:9002' + req.path;
     else   
-        return 'schools_service/schools';
+        return 'host.docker.internal:9003/schools';
 }
 
 app.use((req, res, next) => {

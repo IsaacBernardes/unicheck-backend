@@ -28,7 +28,7 @@ app = Sanic("UnityApp")
 app.blueprint(openapi2_blueprint)
 
 
-@app.get("/api/unities")
+@app.get("/unities")
 @openapi.summary("List unities")
 @openapi.description("Route destined to list unities")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -55,7 +55,7 @@ async def list_unities(request: sanic.Request):
         }, status=500)
 
 
-@app.post("/api/unities")
+@app.post("/unities")
 @openapi.summary("Insert unity")
 @openapi.description("Route destined to create unities")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -82,7 +82,7 @@ async def insert_unity(request: sanic.Request):
         }, status=500)
 
 
-@app.put("/api/unities/<unity_id:int>")
+@app.put("/unities/<unity_id:int>")
 @openapi.summary("Update unity")
 @openapi.description("Route destined to update unities")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -111,7 +111,7 @@ async def update_unity(request: sanic.Request, unity_id: int):
         }, status=500)
 
 
-@app.delete("/api/unities/<unity_id:int>")
+@app.delete("/unities/<unity_id:int>")
 @openapi.summary("Delete unity")
 @openapi.description("Route destined to delete unities")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -139,7 +139,7 @@ async def delete_unity(request: sanic.Request, unity_id: int):
         }, status=500)
 
 
-@app.get("/api/unities/<unity_id:int>/members")
+@app.get("/unities/<unity_id:int>/members")
 @openapi.summary("List unity members")
 @openapi.description("Route destined to list unity members")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -167,7 +167,7 @@ async def list_unity_members(request: sanic.Request, unity_id: int):
         }, status=500)
 
 
-@app.post("/api/unities/<unity_id:int>/invites")
+@app.post("/unities/<unity_id:int>/invites")
 @openapi.summary("Create an invite")
 @openapi.description("Route destined to create an unity invite")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -196,7 +196,7 @@ async def insert_invite(request: sanic.Request, unity_id: int):
         }, status=500)
 
 
-@app.put("/api/unities/<unity_id:int>/invites/<user_id>")
+@app.put("/unities/<unity_id:int>/invites/<user_id>")
 @openapi.summary("Update an invite")
 @openapi.description("Route destined to update an unity invite")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -226,7 +226,7 @@ async def update_invite(request: sanic.Request, unity_id: int, user_id: str):
         }, status=500)
 
 
-@app.delete("/api/unities/<unity_id:int>/invites/<user_id>")
+@app.delete("/unities/<unity_id:int>/invites/<user_id>")
 @openapi.summary("Delete an invite")
 @openapi.description("Route destined to delete an unity invite")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -255,7 +255,7 @@ async def delete_invite(request: sanic.Request, unity_id: int, user_id: str):
         }, status=500)
 
 
-@app.get("/api/invites")
+@app.get("/invites")
 @openapi.summary("List user's invites")
 @openapi.description("Route destined to list user's invite")
 @openapi.parameter("Authorization", str, location="header", required=True)
@@ -281,7 +281,7 @@ async def answer_invite(request: sanic.Request):
         }, status=500)
 
 
-@app.put("/api/invites/<unity_id>")
+@app.put("/invites/<unity_id>")
 @openapi.summary("Answer an invite")
 @openapi.description("Route destined to answer an unity invite")
 @openapi.parameter("Authorization", str, location="header", required=True)
