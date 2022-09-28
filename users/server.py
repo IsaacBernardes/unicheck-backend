@@ -1,5 +1,6 @@
 import sanic
 from sanic import Sanic
+from utils.cors import add_cors_headers
 from sanic_openapi import openapi, openapi3_blueprint
 
 from resources.resources_users_listusers import listusers_resolver
@@ -206,6 +207,9 @@ async def validate_token(request: sanic.Request):
             "version": __version__,
             "data": []
         }, status=500)
+
+
+app.register_middleware(add_cors_headers, "response")
 
 
 if __name__ == "__main__":

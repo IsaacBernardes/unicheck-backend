@@ -33,7 +33,7 @@ def signup_resolver(request, context=None):
             "firstName": request["body"]["firstName"],
             "lastName": request["body"]["lastName"],
             "email": request["body"]["email"],
-            "emailVerified": False,
+            "emailVerified": True,
             "enabled": True,
             "credentials": [
                 {

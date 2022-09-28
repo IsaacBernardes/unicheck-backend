@@ -2,6 +2,7 @@ import sanic
 from sanic import Sanic
 from sanic_openapi import openapi, openapi2_blueprint
 
+from utils.cors import add_cors_headers
 from utils.environments import Environment
 from resources.resources_unities_listunities import listunities_resolver
 from resources.resources_unities_createunity import createunity_resolver
@@ -315,6 +316,9 @@ def build_query_params(params_list):
     for param in params_list:
         result[param[0]] = param[1]
     return result
+
+
+app.register_middleware(add_cors_headers, "response")
 
 
 if __name__ == "__main__":
