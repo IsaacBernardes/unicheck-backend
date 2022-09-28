@@ -1,11 +1,9 @@
 import psycopg2
-import sanic.response
-
-from utils.keycloack import KeycloackClient
+from utils.database import Connection
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
-__last_modify__ = "06/09/2022"
+__last_modify__ = "25/09/2022"
 __version__ = open("version").read()
 
 api_results = {
@@ -15,35 +13,49 @@ api_results = {
     "databaseError": {"status": 400, "message": "Erro no banco de dados"},
     "invalidToken": {"status": 401, "message": "O token do usuário não foi reconhecido"},
     "notAuthorized": {"status": 401, "message": "O usuário não possui acesso a esta funcionalidade"},
+    "alreadyExists": {"status": 412, "message": "A unidade já foi cadastrado"},
     "defaultError": {"status": 500, "message": "Erro interno da API"}
 }
 
 
-def validatetoken_resolver(request, context=None):
-
-    keycloack_client = KeycloackClient()
-    keycloack_client.connect()
+def createunity_resolver(request, context=None):
+    conn = Connection()
+    cnx = conn.init_connection()
+    cursor = cnx.cursor()
     situation = "defaultError"
     data = []
 
     try:
-        result = keycloack_client.verify_token(token=request["headers"]["Authorization"])
+        # TODO: VALIDATE TOKEN
+        is_support = True
 
-        if result[0] == 200:
-            situation = "success"
-            data = result[1]
+        if is_support:
 
-            user_id = result[1]["sub"]
-            is_support_path = "/admin/realms/$REALM/users/" + user_id + "/groups"
-            status_code, is_support_result = keycloack_client.get(is_support_path)
+            values = {
+                "name": request["body"]["name"],
+                "address": request["body"]["address"],
+                "id_school":  request["body"]["schoolId"]
+            }
 
-            if status_code == 200 and is_support_result is not None and len(is_support_result) > 0:
-                exists = next((x for x in is_support_result if str(x["name"]).lower() == "suporte"), None)
-                data["support"] = exists is not None
+            query = """INSERT INTO public."unity" ("name", "address", "id_school")
+                       SELECT %(name)s, %(address)s, %(id_school)s
+                       WHERE NOT EXISTS (
+                            SELECT u."id" FROM public."unity" u
+                            WHERE LOWER(u."name") = LOWER(%(name)s)
+                            AND u."id_school" = %(id_school)s
+                       )"""
+
+            cursor.execute(query, values)
+            affected_rows = cursor.rowcount
+
+            if affected_rows > 0:
+                situation = "success"
+                cnx.commit()
             else:
-                data["support"] = False
+                situation = "alreadyExists"
+
         else:
-            situation = "invalidToken"
+            situation = "notAuthorized"
 
     except KeyError as ex:
         print("Key error: " + str(ex))
@@ -59,12 +71,9 @@ def validatetoken_resolver(request, context=None):
         situation = "defaultError"
 
     finally:
-
-        keycloack_client.disconnect()
-
-        return sanic.response.json(body={
+        cnx.close()
+        return api_results[situation]["status"], {
             "message": api_results[situation]["message"],
             "data": data,
             "version": __version__,
-        }, status=api_results[situation]["status"])
-
+        }

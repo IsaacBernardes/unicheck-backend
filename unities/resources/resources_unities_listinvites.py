@@ -1,11 +1,9 @@
 import psycopg2
-import sanic.response
-
-from utils.keycloack import KeycloackClient
+from utils.database import Connection
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
-__last_modify__ = "06/09/2022"
+__last_modify__ = "25/09/2022"
 __version__ = open("version").read()
 
 api_results = {
@@ -15,35 +13,44 @@ api_results = {
     "databaseError": {"status": 400, "message": "Erro no banco de dados"},
     "invalidToken": {"status": 401, "message": "O token do usuário não foi reconhecido"},
     "notAuthorized": {"status": 401, "message": "O usuário não possui acesso a esta funcionalidade"},
+    "alreadyExists": {"status": 412, "message": "A unidade já foi cadastrado"},
     "defaultError": {"status": 500, "message": "Erro interno da API"}
 }
 
 
-def validatetoken_resolver(request, context=None):
-
-    keycloack_client = KeycloackClient()
-    keycloack_client.connect()
+def listinvites_resolver(request, context=None):
+    conn = Connection()
+    cnx = conn.init_connection()
+    cursor = cnx.cursor()
     situation = "defaultError"
     data = []
 
     try:
-        result = keycloack_client.verify_token(token=request["headers"]["Authorization"])
+        # TODO: VALIDATE TOKEN
+        id_user = ""
 
-        if result[0] == 200:
-            situation = "success"
-            data = result[1]
+        values = {
+            "id_user": id_user
+        }
 
-            user_id = result[1]["sub"]
-            is_support_path = "/admin/realms/$REALM/users/" + user_id + "/groups"
-            status_code, is_support_result = keycloack_client.get(is_support_path)
+        query = """SELECT json_agg(dt) FROM (
+                            SELECT u."id" as "unityId",
+                                   u."name" as "unityName",
+                                   uu."accepted" as "accepted",
+                                   o."id" as "occupationId",
+                                   o."alias" as "occupationAlias"
+                            FROM public."unity" u, public."unity_users" uu, public."occupation" o
+                            WHERE u."id" = uu."id_unity"
+                            AND o."id" = uu."id_occupation"
+                            AND uu."id_user" = %(id_user)s
+                       )dt;"""
 
-            if status_code == 200 and is_support_result is not None and len(is_support_result) > 0:
-                exists = next((x for x in is_support_result if str(x["name"]).lower() == "suporte"), None)
-                data["support"] = exists is not None
-            else:
-                data["support"] = False
-        else:
-            situation = "invalidToken"
+        cursor.execute(query, values)
+        result = cursor.fetchone()
+        situation = "success"
+
+        if result is not None and len(result) > 0 and result[0] is not None:
+            data = result[0]
 
     except KeyError as ex:
         print("Key error: " + str(ex))
@@ -59,12 +66,9 @@ def validatetoken_resolver(request, context=None):
         situation = "defaultError"
 
     finally:
-
-        keycloack_client.disconnect()
-
-        return sanic.response.json(body={
+        cnx.close()
+        return api_results[situation]["status"], {
             "message": api_results[situation]["message"],
             "data": data,
             "version": __version__,
-        }, status=api_results[situation]["status"])
-
+        }

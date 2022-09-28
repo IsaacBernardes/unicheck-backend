@@ -1,7 +1,5 @@
 import psycopg2
-import sanic.response
-
-from utils.keycloack import KeycloackClient
+from utils.database import Connection
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
@@ -14,30 +12,43 @@ api_results = {
     "dataError": {"status": 400, "message": "Erro ao realizar a operação no banco de dados"},
     "databaseError": {"status": 400, "message": "Erro no banco de dados"},
     "invalidToken": {"status": 401, "message": "O token do usuário não foi reconhecido"},
-    "invalidUser": {"status": 401, "message": "O usuário informado não foi cadastrado"},
     "notAuthorized": {"status": 401, "message": "O usuário não possui acesso a esta funcionalidade"},
+    "notFound": {"status": 404, "message": "A unidade não foi encontrada"},
+    "alreadyExists": {"status": 412, "message": "A unidade já foi cadastrado"},
     "defaultError": {"status": 500, "message": "Erro interno da API"}
 }
 
 
-def finduser_resolver(request, context=None):
-
-    keycloack_client = KeycloackClient()
-    keycloack_client.connect()
+def deleteunity_resolver(request, context=None):
+    conn = Connection()
+    cnx = conn.init_connection()
+    cursor = cnx.cursor()
     situation = "defaultError"
     data = []
 
     try:
+        # TODO: VALIDATE TOKEN
+        is_support = True
 
-        user_email = request["params"]["email"]
-        search_path = "/admin/realms/$REALM/users?email" + user_email
-        result = keycloack_client.get(search_path)
+        if is_support:
 
-        if result[0] == 200:
-            situation = "success"
-            data = result[1]
+            values = {
+                "id": request["params"]["id"]
+            }
+
+            query = """DELETE FROM public."unity" WHERE "id" = %(id)s;"""
+
+            cursor.execute(query, values)
+            affected_rows = cursor.rowcount
+
+            if affected_rows > 0:
+                situation = "success"
+                cnx.commit()
+            else:
+                situation = "notFound"
+
         else:
-            situation = "invalidUser"
+            situation = "notAuthorized"
 
     except KeyError as ex:
         print("Key error: " + str(ex))
@@ -53,10 +64,9 @@ def finduser_resolver(request, context=None):
         situation = "defaultError"
 
     finally:
-        keycloack_client.disconnect()
-        return sanic.response.json(body={
+        cnx.close()
+        return api_results[situation]["status"], {
             "message": api_results[situation]["message"],
             "data": data,
             "version": __version__,
-        }, status=api_results[situation]["status"])
-
+        }

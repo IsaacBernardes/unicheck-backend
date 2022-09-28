@@ -110,7 +110,27 @@ class KeycloackClient:
         r = session.post(url=url, headers=headers, data=data)
         result = None
 
-        print(r.text)
+        try:
+            result = r.json()
+        except:
+            pass
+
+        return r.status_code, result
+
+    def put(self, keycloak_path: str, data):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": self.token,
+            "Accept": "application/json"
+        }
+
+        keycloak_path = keycloak_path.replace('$REALM', self.realm)
+        print(keycloak_path)
+        url = urljoin(self.keycloak_url, keycloak_path)
+
+        session = requests.session()
+        r = session.put(url=url, headers=headers, json=data)
+        result = None
 
         try:
             result = r.json()

@@ -1,9 +1,5 @@
 .idea
 venv
 __pycache__
-schools/node_modules
-schools/server/test
-subjects/node_modules
-subjects/server/test
-schoolClass/node_modules
-schoolClass/server/test
+*/node_modules
+*/server/test
