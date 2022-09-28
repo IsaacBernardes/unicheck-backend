@@ -2,13 +2,13 @@ from sanic_openapi import openapi
 
 __creator__ = "IsaacBernardes"
 __last_modifier__ = "IsaacBernardes"
-__last_modify__ = "05/09/2022"
+__last_modify__ = "28/09/2022"
 __version__ = open("version").read()
 
 
 class InsertUserRequestBody:
-    firstName = openapi.String(default="Isaac Bernardes")
-    lastName = openapi.String(default="Isaac Bernardes")
+    firstName = openapi.String(default="Isaac")
+    lastName = openapi.String(default="Bernardes")
     email = openapi.String(default="isaac.bernardes@ufrpe.br")
     password = openapi.String(default="********")
 
