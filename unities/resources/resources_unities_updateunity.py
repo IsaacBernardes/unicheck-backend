@@ -1,4 +1,5 @@
 import psycopg2
+import requests
 from utils.database import Connection
 
 __creator__ = "IsaacBernardes"
@@ -19,6 +20,28 @@ api_results = {
 }
 
 
+def validate_token(token):
+
+    try:
+        headers = {"Authorization": token}
+        url = "http://host.docker.internal:9002/users/validatetoken"
+
+        session = requests.session()
+        r = session.post(url=url, headers=headers)
+        result = None
+
+        try:
+            result = r.json()
+        except:
+            pass
+
+        return r.status_code, result
+
+    except Exception as ex:
+        print(ex)
+        return 500, None
+
+
 def updateunity_resolver(request, context=None):
     conn = Connection()
     cnx = conn.init_connection()
@@ -27,12 +50,18 @@ def updateunity_resolver(request, context=None):
     data = []
 
     try:
-        # TODO: VALIDATE TOKEN
-        is_support = True
+        is_valid, user_info = validate_token(request["headers"]["Authorization"])
+
+        if is_valid != 200:
+            situation = "invalidToken"
+            return
+
+        is_support = user_info["data"]["support"]
+        user_id = user_info["data"]["sub"]
 
         if not is_support:
             values = {
-                "id_user": "",  # TODO: PREENCHER COM ID DO TOKEN OBTID
+                "id_user": user_id,
                 "id_unity": request["params"]["id"]
             }
 

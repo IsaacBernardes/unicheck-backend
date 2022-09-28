@@ -134,6 +134,17 @@ services:
     depends_on:
       - users_database
 
+  rabbit:
+    image: rabbitmq:3.11.0-alpine
+    expose:
+      - "5672"
+    depends_on:
+      - users_service
+      - unities_service
+      - schools_service
+      - school_classes_service
+      - subjects_service
+
   api_gateway:
     build: ./api_gateway
     ports:
