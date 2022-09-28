@@ -21,9 +21,6 @@ CREATE TABLE public.school_class (
 	id_unity integer NOT NULL,
 	CONSTRAINT school_class_pk PRIMARY KEY (id)
 );
--- ddl-end --
-ALTER TABLE public.school_class OWNER TO postgres;
--- ddl-end --
 
 -- object: public.school_class_students | type: TABLE --
 -- DROP TABLE IF EXISTS public.school_class_students CASCADE;
@@ -32,9 +29,6 @@ CREATE TABLE public.school_class_students (
 	id_student integer NOT NULL
 
 );
--- ddl-end --
-ALTER TABLE public.school_class_students OWNER TO postgres;
--- ddl-end --
 
 -- object: public.classroom | type: TABLE --
 -- DROP TABLE IF EXISTS public.classroom CASCADE;
@@ -45,9 +39,6 @@ CREATE TABLE public.classroom (
 	id_teacher integer NOT NULL,
 	CONSTRAINT classroom_pk PRIMARY KEY (id)
 );
--- ddl-end --
-ALTER TABLE public.classroom OWNER TO postgres;
--- ddl-end --
 
 -- object: public.attendance | type: TABLE --
 -- DROP TABLE IF EXISTS public.attendance CASCADE;
@@ -57,19 +48,12 @@ CREATE TABLE public.attendance (
 	frequency json NOT NULL,
 	CONSTRAINT attendance_pk PRIMARY KEY (id_classroom)
 );
--- ddl-end --
-ALTER TABLE public.attendance OWNER TO postgres;
--- ddl-end --
 
 -- object: public.gradles | type: TABLE --
 -- DROP TABLE IF EXISTS public.gradles CASCADE;
 CREATE TABLE public.gradles (
 	id_classroom integer NOT NULL,
 	gradles json NOT NULL
-	CONSTRAINT id_classroom UNIQUE (id_classroom)
 );
--- ddl-end --
-ALTER TABLE public.gradles OWNER TO postgres;
--- ddl-end --
 
 

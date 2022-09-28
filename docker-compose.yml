@@ -6,8 +6,8 @@ services:
       POSTGRES_DB: "user_database"
       POSTGRES_USER: "admin"
       POSTGRES_PASSWORD: "admin"
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"
 
   unities_database:
     image: postgres:13
@@ -17,13 +17,58 @@ services:
       POSTGRES_PASSWORD: "admin"
     volumes:
       - ./unities/database/2022-09-26.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5433"
     expose:
       - "5433"
+    command: -p 5433
+
+  schools_database:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: "school_database"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
+    volumes:
+      - ./schools/database/create.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5434:5434"
+    expose:
+      - "5434"
+    command: -p 5434
+
+  school_classes_database:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: "school_classes_database"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
+    volumes:
+      - ./schoolClass/database/create.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5435:5435"
+    expose:
+      - "5435"
+    command: -p 5435
+
+  subjects_database:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: "subjects_database"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
+    volumes:
+      - ./subjects/database/create.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5436:5436"
+    expose:
+      - "5436"
+    command: -p 5436
 
   unities_service:
     build: ./unities
     environment:
-      DB_HOST: "unity_database"
+      DB_HOST: "unities_database"
       DB_PORT: "5433"
       DB_NAME: "unity_database"
       DB_USER: "admin"
@@ -47,6 +92,30 @@ services:
       - "9002:8090"
     depends_on:
       - keycloak
+
+  schools_service:
+    build: ./schools
+    command: npm start
+    ports:
+      - "9003:3000"
+    depends_on:
+      - schools_database
+
+  school_classes_service:
+    build: ./schoolClass
+    command: npm start
+    ports:
+      - "9004:3000"
+    depends_on:
+      - school_classes_database
+
+  subjects_service:
+    build: ./subjects
+    command: npm start
+    ports:
+      - "9005:3000"
+    depends_on:
+      - subjects_database
 
   keycloak:
     image: quay.io/keycloak/keycloak:19.0.2

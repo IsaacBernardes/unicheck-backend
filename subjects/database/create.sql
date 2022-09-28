@@ -9,7 +9,7 @@
 -- 
 -- object: new_database | type: DATABASE --
 -- DROP DATABASE IF EXISTS new_database;
-CREATE DATABASE new_database;
+-- CREATE DATABASE new_database;
 -- ddl-end --
 
 
@@ -22,9 +22,6 @@ CREATE TABLE public.subject (
 	id_school integer NOT NULL,
 	CONSTRAINT subject_pk PRIMARY KEY (id)
 );
--- ddl-end --
-ALTER TABLE public.subject OWNER TO postgres;
--- ddl-end --
 
 -- object: public.subject_type | type: TABLE --
 -- DROP TABLE IF EXISTS public.subject_type CASCADE;
@@ -33,9 +30,6 @@ CREATE TABLE public.subject_type (
 	name text NOT NULL,
 	CONSTRAINT subject_type_pk PRIMARY KEY (id)
 );
--- ddl-end --
-ALTER TABLE public.subject_type OWNER TO postgres;
--- ddl-end --
 
 INSERT INTO public.subject_type (id, name) VALUES (E'1', E'EXATAS');
 -- ddl-end --
@@ -48,7 +42,7 @@ INSERT INTO public.subject_type (id, name) VALUES (E'3', E'SAÚDE');
 -- ALTER TABLE public.subject DROP CONSTRAINT IF EXISTS subject_type_fk CASCADE;
 ALTER TABLE public.subject ADD CONSTRAINT subject_type_fk FOREIGN KEY (id_subject_type)
 REFERENCES public.subject_type (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 
